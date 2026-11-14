@@ -1,0 +1,602 @@
+{
+  "info": {
+    "_postman_id": "9e1e7cb9-29c7-4026-ad80-feaf21a191fe",
+    "name": "HeatSafe API - Testes locais",
+    "description": "Coleção de demonstração dos fluxos da API HeatSafe. Execute em Development, com a API iniciada em http://localhost:5078. Os dados são fictícios. A coleção obtém tokens de demonstração e testa leitura extrema, alerta, confirmação, visita prioritária e eventos do dispositivo.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "noauth"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5078"
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "familiarToken",
+      "value": ""
+    },
+    {
+      "key": "agenteToken",
+      "value": ""
+    },
+    {
+      "key": "deviceToken",
+      "value": ""
+    },
+    {
+      "key": "alertaId",
+      "value": ""
+    },
+    {
+      "key": "visitaId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Saúde e autenticação",
+      "item": [
+        {
+          "name": "Health - API disponível",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health",
+            "description": "Verifica se a API está respondendo. Não exige token."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('API responde HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Status healthy', function () { pm.expect(pm.response.json().status).to.eql('healthy'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Token - Administrador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin@123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/auth/token",
+            "description": "Token exclusivamente demonstrativo; endpoint disponível somente em Development."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Token de administrador emitido', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json(); pm.collectionVariables.set('adminToken', body.accessToken);",
+                  "pm.test('Token preenchido', function () { pm.expect(body.accessToken).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Token - Familiar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"familiar\",\n  \"password\": \"Familia@123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/auth/token"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Token de familiar emitido', function () { pm.response.to.have.status(200); });",
+                  "pm.collectionVariables.set('familiarToken', pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Token - Agente de saúde",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"agente\",\n  \"password\": \"Agente@123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/auth/token"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Token de agente emitido', function () { pm.response.to.have.status(200); });",
+                  "pm.collectionVariables.set('agenteToken', pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Token - Dispositivo HS-001",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"dispositivo\",\n  \"password\": \"Device@123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/auth/token"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Token de dispositivo emitido', function () { pm.response.to.have.status(200); });",
+                  "pm.collectionVariables.set('deviceToken', pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Cadastros (Administrador)",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{adminToken}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Listar idosos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/idosos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Lista de idosos HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar familiares",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/familiares"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Lista de familiares HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar agentes de saúde",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/agentes-saude"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Lista de agentes HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar residências",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/residencias"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Lista de residências HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar dispositivos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/dispositivos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Lista de dispositivos HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - Integração ESP32 (Dispositivo)",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{deviceToken}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Enviar leitura - simular perigo extremo e divergência do sensor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivoId\": \"HS-001\",\n  \"temperatura\": 35.2,\n  \"umidade\": 80,\n  \"indiceCalor\": 42.1,\n  \"nivel\": \"PERIGO\",\n  \"movimento\": false,\n  \"dataHora\": \"{{$isoTimestamp}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/leituras",
+            "description": "Dados fictícios. O servidor recalcula o índice: 35,2 °C e 80% de umidade produzem índice superior a 54 °C na fórmula implementada, demonstrando que o servidor não confia na classificação PERIGO enviada pelo dispositivo."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Leitura aceita HTTP 201', function () { pm.response.to.have.status(201); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Servidor devolveu índice calculado', function () { pm.expect(body.indiceCalorCalculado).to.be.a('number'); });",
+                  "pm.test('Servidor classifica independentemente do dispositivo', function () { pm.expect(body.nivel).to.eql('PERIGO_EXTREMO'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar hidratação (AGUA)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "hs-postman-agua-001"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivoId\": \"HS-001\",\n  \"tipo\": \"AGUA\",\n  \"dataHora\": \"{{$isoTimestamp}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/eventos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Evento de hidratação aceito', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar movimento (MOVIMENTO)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "hs-postman-movimento-001"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivoId\": \"HS-001\",\n  \"tipo\": \"MOVIMENTO\",\n  \"dataHora\": \"{{$isoTimestamp}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/eventos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Evento de movimento aceito', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 - Família",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{familiarToken}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Consultar status da residência 1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/residencias/1/status"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status da residência disponível para familiar vinculado', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar alertas ativos e guardar o primeiro ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/alertas/ativos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Consulta de alertas autorizada', function () { pm.response.to.have.status(200); });",
+                  "const alerts = pm.response.json();",
+                  "pm.test('Existe alerta demonstrativo', function () { pm.expect(alerts.length).to.be.above(0); });",
+                  "if (alerts.length > 0) pm.collectionVariables.set('alertaId', alerts[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Confirmar primeiro alerta (familiar ID 2)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"familiarId\": 2,\n  \"observacao\": \"Contato realizado no teste demonstrativo.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/alertas/{{alertaId}}/confirmar"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Alerta confirmado com sucesso', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 - Agente de saúde",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{agenteToken}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Listar visitas prioritárias e guardar primeiro ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/visitas/prioritarias"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Lista de visitas disponível', function () { pm.response.to.have.status(200); });",
+                  "const visits = pm.response.json();",
+                  "pm.test('Existe visita para perigo extremo', function () { pm.expect(visits.length).to.be.above(0); });",
+                  "if (visits.length > 0) pm.collectionVariables.set('visitaId', visits[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Atualizar primeira visita para EM_ANDAMENTO",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"EM_ANDAMENTO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/visitas/{{visitaId}}/status"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status da visita atualizado', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

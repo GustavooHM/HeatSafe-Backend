@@ -1,0 +1,46 @@
+HEATSAFE BACKEND - COMO TESTAR NO WINDOWS
+
+1. Extraia a pasta HeatSafe-Backend em um local simples, por exemplo:
+   C:\Projetos\HeatSafe-Backend
+
+2. Abra a pasta extraida no VS Code.
+
+3. Primeiro execute o arquivo:
+   TESTAR-HEATSAFE.bat
+   Ele restaura pacotes, compila a solucao e executa os testes xUnit.
+   A primeira restauracao precisa de internet para acessar o NuGet.
+
+4. Se restore, build e testes terminarem sem erros, execute:
+   INICIAR-HEATSAFE.bat
+
+5. Abra no navegador:
+   http://localhost:5078/swagger
+
+6. Para verificar rapidamente a API em outra janela do PowerShell, com a API em execucao:
+   .\scripts\validar-api.ps1
+
+CONTAS FICTICIAS DE DESENVOLVIMENTO
+- Administrador: admin / Admin@123
+- Familiar: familiar / Familia@123
+- Agente de saude: agente / Agente@123
+- Dispositivo: dispositivo / Device@123
+
+Essas contas e senhas existem apenas no ambiente Development para demonstracao local.
+Nao use essas credenciais em producao.
+
+DADOS DEMONSTRATIVOS
+O primeiro inicio aplica a migration SQLite e cria dados ficticios. O banco local
+heatsafe.db e criado automaticamente na pasta de execucao da API.
+
+IMPORTANTE
+Este pacote contem o backend C# da equipe. O ESP32, o aplicativo Expo e o servico
+Python/FastAPI sao componentes de outras disciplinas. A API funciona localmente
+sem eles, mas a previsao real depende de o servico Python estar disponivel.
+As notificacoes atuais sao demonstrativas e aparecem nos logs; nao enviam SMS,
+WhatsApp ou push reais.
+
+O ambiente que gerou este ZIP nao tinha o SDK dotnet instalado nem acesso ao NuGet.
+Por isso, nao foi possivel executar dotnet restore/build/test aqui. Rode o arquivo
+TESTAR-HEATSAFE.bat no seu Windows antes de considerar a compilacao validada.
+Se aparecer erro, envie a mensagem completa ou uma captura do terminal para que
+possamos corrigir o projeto.
