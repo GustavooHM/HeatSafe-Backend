@@ -25,6 +25,8 @@
 | **Problema, em uma frase** | Nos dias de calor extremo, idosos que passam o dia sozinhos em casas quentes podem passar mal sem perceber o risco, e ninguém fica sabendo a tempo. |
 | **Como funciona** | Um ESP32 dentro da casa mede o calor e o movimento; **esta API** recalcula o índice de calor, classifica o risco, avisa a família e, sem confirmação em 20 minutos, coloca a casa na lista de visitas da UBS. Na véspera de um dia perigoso, consulta o serviço de previsão e liga o modo vigilância. |
 | **Indicador de impacto** | Tempo entre o alerta e a confirmação da família · % de alertas confirmados em até 30 min · visitas priorizadas pela UBS |
+| **O que cada parte faz** | **App Expo (Mobile):** família e agente da UBS acompanham alertas e confirmam visitas · **ESP32 no Wokwi (IoT/IoB):** mede o calor e o movimento dentro da casa e registra a água bebida · **API C# (.NET):** cadastros, leituras, alertas e escalonamento para a UBS · **Serviço SOA (Java/Spring):** previsão do dia perigoso para a API · **ML:** modelo Random Forest com dados do INMET que prevê o dia perigoso · **Cybersecurity:** SentinelaSAST audita o código para os dados de saúde e rotina não vazarem · **Operating Systems:** infraestrutura Linux que hospeda a solução · **Testing:** features e casos de teste no Azure Boards |
+| **Link do repositório** | **https://github.com/GustavooHM/HeatSafe-Backend** · demais partes: [Mobile](https://github.com/3ESPG/GS-HeatSafe-mobile) · [SOA](https://github.com/3ESPG/GS-HeatSafe-SOA) · [IA/ML](https://github.com/3ESPG/2GS_IA_ML) · [IoT](https://github.com/3ESPG/2GS_IoT_IoB) |
 | **ODS** | 3 (Saúde) · 10 (Redução das desigualdades) · 11 (Cidades sustentáveis) · 13 (Ação climática) |
 
 ## Descrição
