@@ -10,9 +10,15 @@ public sealed class JwtOptions
 
 public sealed class ForecastOptions
 {
-    public string BaseUrl { get; set; } = "http://localhost:8000/";
+    public string BaseUrl { get; set; } = "http://localhost:8080/";
     public string Station { get; set; } = "A701";
     public int TimeoutSeconds { get; set; } = 5;
+}
+
+/// <summary>Chaves de API dos dispositivos ESP32 (cabeçalho X-Api-Key). Chave do dicionário = código do dispositivo.</summary>
+public sealed class DeviceAuthOptions
+{
+    public Dictionary<string, string> ApiKeys { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }
 
 public sealed class MonitoringOptions

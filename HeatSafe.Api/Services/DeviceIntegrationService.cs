@@ -61,7 +61,7 @@ public sealed class DeviceIntegrationService(
         string? idempotencyKey, CancellationToken cancellationToken)
     {
         if (!Enum.TryParse<TipoEvento>(tipo?.Trim(), true, out var parsedType))
-            throw new ArgumentException("Tipo de evento inválido. Valores aceitos: AGUA, MOVIMENTO, ALARME_SEM_RESPOSTA.");
+            throw new ArgumentException("Tipo de evento inválido. Valores aceitos: AGUA, MOVIMENTO, ALARME_SEM_RESPOSTA, LEMBRETE_AGUA.");
         if (!DateTimeNormalizer.TryToUtc(dataHora, out var eventUtc)) throw new ArgumentException("DataHora inválida. Use ISO 8601.");
         var now = timeProvider.GetUtcNow().UtcDateTime;
         if (eventUtc > now.AddMinutes(5)) throw new ArgumentException("DataHora não pode estar mais de 5 minutos no futuro.");

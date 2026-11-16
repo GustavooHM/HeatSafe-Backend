@@ -83,7 +83,7 @@ public sealed class RiskMonitoringService(
             immediateUbs = true;
         }
         else if (latest.NivelRisco == NivelRisco.PERIGO &&
-                 noMovementHours > 2)
+                 noMovementHours >= 2)
         {
             candidate = TipoAlerta.PERIGO_SEM_MOVIMENTO;
 
@@ -95,7 +95,7 @@ public sealed class RiskMonitoringService(
                 $"Índice de calor em perigo e ausência de movimentação há {elapsed}.";
         }
         else if (latest.NivelRisco == NivelRisco.CAUTELA_EXTREMA &&
-                 noMovementHours > 3)
+                 noMovementHours >= 3)
         {
             candidate = TipoAlerta.CAUTELA_SEM_MOVIMENTO;
 
@@ -107,7 +107,7 @@ public sealed class RiskMonitoringService(
                 $"Cautela extrema e ausência de movimentação há {elapsed}.";
         }
         else if (latest.NivelRisco == NivelRisco.CAUTELA_EXTREMA &&
-                 noHydrationHours > 3)
+                 noHydrationHours >= 3)
         {
             candidate = TipoAlerta.CAUTELA_SEM_HIDRATACAO;
 

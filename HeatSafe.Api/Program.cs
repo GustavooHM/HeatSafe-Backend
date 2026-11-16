@@ -9,6 +9,7 @@ using HeatSafe.Api.Security;
 using HeatSafe.Api.Repositories;
 using HeatSafe.Api.Repositories.Interfaces;
 using HeatSafe.Api.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -54,6 +55,7 @@ builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<ForecastOptions>(builder.Configuration.GetSection("Forecast"));
 builder.Services.Configure<MonitoringOptions>(builder.Configuration.GetSection("Monitoring"));
 builder.Services.Configure<PriorityWeights>(builder.Configuration.GetSection("PriorityWeights"));
+builder.Services.Configure<DeviceAuthOptions>(builder.Configuration.GetSection("DeviceAuth"));
 if (builder.Environment.IsDevelopment())
     builder.Services.Configure<DemoAuthOptions>(builder.Configuration.GetSection("DemoAuth"));
 else
@@ -66,6 +68,9 @@ if (string.IsNullOrWhiteSpace(jwtOptions.SigningKey) || Encoding.UTF8.GetByteCou
         throw new InvalidOperationException("Configure Jwt:SigningKey com pelo menos 32 bytes por variável de ambiente/secret manager.");
     jwtOptions.SigningKey = "HEATSAFE-DEV-ONLY-CHANGE-THIS-KEY-32-BYTES-MINIMUM";
 }
+// O JwtTokenService gera os tokens a partir de IOptions<JwtOptions>: ele precisa usar a mesma chave
+// que valida os tokens abaixo (inclusive a chave de desenvolvimento), senão a geração falha com chave vazia.
+builder.Services.PostConfigure<JwtOptions>(options => options.SigningKey = jwtOptions.SigningKey);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -83,7 +88,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             NameClaimType = System.Security.Claims.ClaimTypes.Name,
             RoleClaimType = System.Security.Claims.ClaimTypes.Role
         };
-    });
+    })
+    // O ESP32 se autentica com o cabeçalho X-Api-Key (ver DeviceApiKeyAuthenticationHandler)
+    .AddScheme<AuthenticationSchemeOptions, DeviceApiKeyAuthenticationHandler>(
+        DeviceApiKeyAuthenticationHandler.SchemeName, _ => { });
 builder.Services.AddAuthorization();
 
 builder.Services.AddSingleton(TimeProvider.System);

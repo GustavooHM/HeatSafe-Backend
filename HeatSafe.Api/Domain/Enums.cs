@@ -13,7 +13,9 @@ public enum TipoEvento
 {
     AGUA,
     MOVIMENTO,
-    ALARME_SEM_RESPOSTA
+    ALARME_SEM_RESPOSTA,
+    /// <summary>O aparelho lembrou o idoso de beber água. Só é registrado (indicador de hidratação), não conta como água bebida.</summary>
+    LEMBRETE_AGUA
 }
 
 public enum TipoAlerta

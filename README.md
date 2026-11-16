@@ -1,14 +1,43 @@
 # HeatSafe — Backend C#/.NET
 
+| | |
+|---|---|
+| **Instituição** | FIAP · Engenharia de Software · 3ESPG |
+| **Disciplina** | C# Software Development |
+| **Atividade** | Global Solution 2026.2 — CitizenTech |
+
+## Integrantes
+
+| Nome | RM |
+|---|---|
+| Felipe Braunstein e Silva | RM554483 |
+| Felipe do Nascimento Fernandes | RM554598 |
+| Henrique Ignacio Bartalo | RM555274 |
+| Gustavo Henrique Martins | RM556956 |
+
+## Ficha da CitizenTech
+
+| Campo | Resposta |
+|---|---|
+| **Nome** | HeatSafe |
+| **Cidade e bairro** | São Paulo, Itaim Paulista (zona leste): casas térreas com telha de fibrocimento |
+| **Cidadão beneficiado** | Idosos que moram ou passam o dia sozinhos em casas quentes; familiares e agentes comunitários de saúde da UBS |
+| **Problema, em uma frase** | Nos dias de calor extremo, idosos que passam o dia sozinhos em casas quentes podem passar mal sem perceber o risco, e ninguém fica sabendo a tempo. |
+| **Como funciona** | Um ESP32 dentro da casa mede o calor e o movimento; **esta API** recalcula o índice de calor, classifica o risco, avisa a família e, sem confirmação em 20 minutos, coloca a casa na lista de visitas da UBS. Na véspera de um dia perigoso, consulta o serviço de previsão e liga o modo vigilância. |
+| **Indicador de impacto** | Tempo entre o alerta e a confirmação da família · % de alertas confirmados em até 30 min · visitas priorizadas pela UBS |
+| **ODS** | 3 (Saúde) · 10 (Redução das desigualdades) · 11 (Cidades sustentáveis) · 13 (Ação climática) |
+
+## Descrição
+
 Backend da CitizenTech HeatSafe, projeto acadêmico da Global Solution FIAP 2026.2.
 
-O sistema recebe leituras ambientais de um ESP32, recalcula o índice de calor no servidor, classifica risco, cria alertas, permite confirmação por familiares, encaminha ocorrências não atendidas à lista de visitas da UBS e consulta a previsão climática fornecida por um serviço Python/FastAPI.
+O sistema recebe leituras ambientais de um ESP32, recalcula o índice de calor no servidor, classifica risco, cria alertas, permite confirmação por familiares, encaminha ocorrências não atendidas à lista de visitas da UBS e consulta a previsão climática fornecida pelo serviço de clima do grupo (HeatSafe Clima API, Java/Spring Boot).
 
 > **Aviso acadêmico:** este protótipo não é dispositivo médico, não realiza diagnóstico e não substitui avaliação profissional. A pontuação de visita é uma heurística demonstrativa, não uma decisão clínica.
 
 ## Requisitos
 
-- .NET SDK 10.0.403 ou posterior dentro da linha .NET 10.
+- .NET SDK 10 (qualquer versão 10.0.x; o `global.json` aceita a partir da 10.0.100).
 - Acesso à internet na primeira restauração dos pacotes NuGet.
 - Windows, Linux ou macOS.
 - SQLite incluído pelo pacote do EF Core; não é necessário instalar um servidor de banco.
@@ -53,6 +82,13 @@ HeatSafe/
 
 Os arquivos `.bat` procuram primeiro o SDK instalado em `%USERPROFILE%\.dotnet\dotnet.exe` e depois tentam o comando `dotnet` do PATH. Também existem versões PowerShell em `scripts/`.
 
+### Executar no macOS ou Linux
+
+```bash
+dotnet test HeatSafe.sln                                    # restore, build e testes
+dotnet run --project HeatSafe.Api --launch-profile HeatSafe.Api
+```
+
 O perfil de desenvolvimento usa `http://localhost:5078`. Abra `http://localhost:5078/swagger`.
 
 A API aplica a migration inicial e insere dados de demonstração no primeiro início. O arquivo local `heatsafe.db` será criado dentro da pasta de execução do projeto e é ignorado pelo Git.
@@ -66,9 +102,10 @@ O endpoint `POST /auth/token` só existe no ambiente `Development`. Use os segui
 | `admin` | `Admin@123` | Administrador | Cadastros e administração |
 | `familiar` | `Familia@123` | Familiar | Consultar/confirmar alertas da pessoa vinculada |
 | `agente` | `Agente@123` | AgenteSaude | Consultar e atualizar visitas |
+| `idoso` | `Idoso@123` | Idoso | Consultar o status da própria residência |
 | `dispositivo` | `Device@123` | Dispositivo | Enviar leituras e eventos do `HS-001` |
 
-Essas credenciais são exclusivamente locais e didáticas. Não devem ser usadas em produção. Em produção, configure identidade, segredos, rotação de chaves, TLS e autenticação de dispositivo adequados.
+As contas ficam em `HeatSafe.Api/appsettings.Development.json`, carregado só no ambiente Development. Essas credenciais são exclusivamente locais e didáticas. Não devem ser usadas em produção. Em produção, configure identidade, segredos, rotação de chaves, TLS e autenticação de dispositivo adequados.
 
 ### Obter token
 
@@ -108,6 +145,10 @@ O seed cria as personas fictícias da proposta com nomes identificados como demo
 
 ## Contratos de integração
 
+### Autenticação do dispositivo
+
+As rotas `/leituras` e `/eventos` aceitam **o token JWT de dispositivo** (`POST /auth/token` com `dispositivo` / `Device@123`) **ou o cabeçalho `X-Api-Key`**, que é como o firmware do ESP32 envia. Em Development, a chave do `HS-001` é `heatsafe-demo-2026` (`DeviceAuth:ApiKeys` em `appsettings.Development.json`). A chave identifica o dispositivo: um `HS-001` não consegue enviar dados em nome de outro (403).
+
 ### POST /leituras
 
 ```json
@@ -134,7 +175,7 @@ O backend mantém os valores enviados para auditoria, mas utiliza o valor recalc
 }
 ```
 
-Tipos válidos: `AGUA`, `MOVIMENTO`, `ALARME_SEM_RESPOSTA`. É possível enviar `Idempotency-Key` no header para evitar duplicidade em reenvios.
+Tipos válidos: `AGUA`, `MOVIMENTO`, `ALARME_SEM_RESPOSTA` e `LEMBRETE_AGUA` (o aparelho lembrou o idoso de beber água; só é registrado, não conta como água bebida). É possível enviar `Idempotency-Key` no header para evitar duplicidade em reenvios.
 
 ### POST /alertas/{id}/confirmar
 
@@ -154,12 +195,12 @@ A identidade do token e o vínculo familiar são verificados no servidor.
 | abaixo de 27 °C | NORMAL |
 | 27 °C até abaixo de 32 °C | ATENCAO |
 | 32 °C até abaixo de 41 °C | CAUTELA_EXTREMA |
-| 41 °C até 54 °C | PERIGO |
-| acima de 54 °C | PERIGO_EXTREMO |
+| 41 °C até abaixo de 54 °C | PERIGO |
+| 54 °C ou mais | PERIGO_EXTREMO |
 
-Cautela extrema: alerta familiar quando há mais de 3 horas sem movimento **ou** hidratação. Perigo: alerta familiar após mais de 2 horas sem movimento e encaminhamento à UBS se não houver confirmação em 20 minutos. Perigo extremo: alerta imediato à família e UBS.
+Cautela extrema: alerta familiar quando há 3 horas ou mais sem movimento **ou** hidratação. Perigo: alerta familiar com 2 horas ou mais sem movimento e encaminhamento à UBS se não houver confirmação em 20 minutos. Perigo extremo: alerta imediato à família e UBS.
 
-A especificação funcional mantém 54 °C como PERIGO e valores acima de 54 °C como PERIGO_EXTREMO, mesmo que materiais de tratamento do INMET possam adotar outra convenção na fronteira. Essa convenção é a regra aplicada neste backend.
+Cada limite pertence ao nível de cima (27,0 °C já é ATENCAO e 54,0 °C já é PERIGO_EXTREMO), a mesma tabela usada no ESP32, no app, no serviço de clima e nos casos de teste do Azure.
 
 ## Pontuação de prioridade
 
@@ -173,9 +214,9 @@ A pontuação inicial é uma heurística ponderada configurável por `PriorityWe
 
 O resultado varia de 0 a 100 e deve apoiar a organização de visitas, sem substituir avaliação profissional.
 
-## Integração com previsão Python
+## Integração com o serviço de previsão (SOA)
 
-O cliente tipado consulta `GET /previsao/amanha?estacao=A701` no endereço configurado em `Forecast:BaseUrl` (padrão `http://localhost:8000/`). Falhas externas são registradas sem inventar previsões. O serviço de previsão ainda precisa estar disponível pela outra equipe para que essa integração real aconteça.
+O cliente tipado consulta `GET /previsao/amanha?estacao=A701` no endereço configurado em `Forecast:BaseUrl` (padrão `http://localhost:8080/`), onde roda a **HeatSafe Clima API** (repositório [GS-HeatSafe-SOA](https://github.com/3ESPG/GS-HeatSafe-SOA), Java/Spring Boot com dados reais do INMET). A resposta usa os campos `data`, `perigoso` e `probabilidade`. Falhas externas são registradas sem inventar previsões.
 
 ## Background services
 
@@ -186,7 +227,7 @@ O cliente tipado consulta `GET /previsao/amanha?estacao=A701` no endereço confi
 
 Consulte também a pasta `docs/`:
 
-- `CONTRATOS-INTEGRACAO.md`: contratos HTTP para ESP32, app e serviço Python.
+- `CONTRATOS-INTEGRACAO.md`: contratos HTTP para ESP32, app e serviço de previsão.
 - `MATRIZ-REQUISITOS-FIAP.md`: relação dos critérios acadêmicos com arquivos e evidências.
 - `PLANO-INTEGRACAO-EQUIPE.md`: responsabilidades e ordem de integração das disciplinas.
 - `ROTEIRO-DEMONSTRACAO.md`: sequência sugerida para demonstrar a API.
@@ -200,14 +241,14 @@ O projeto de testes utiliza xUnit 2.9.3 com o adaptador `xunit.runner.visualstud
 dotnet test .\HeatSafe.Tests\HeatSafe.Tests.csproj
 ```
 
-Os testes existentes cobrem as fronteiras de classificação, entradas da calculadora e ordenação relativa da pontuação. A equipe deve ampliar os testes de integração com banco e HTTP à medida que os componentes externos forem disponibilizados. O ambiente em que este pacote foi montado não possui o SDK .NET nem acesso à rede NuGet; portanto, restore/build/test precisam ser executados no computador da equipe antes de considerar a compilação validada.
+Os 27 testes cobrem as fronteiras de classificação (incluindo 27, 32, 41 e 54 °C), as entradas da calculadora, a ordenação relativa da pontuação e a validação da chave de API do dispositivo.
 
 ## Segurança e limitações
 
 - JWT demonstrativo disponível somente em `Development`.
 - Notificações atuais são registradas no log pelo adaptador demonstrativo; não há SMS, WhatsApp ou push real configurado.
 - O ESP32 e o aplicativo são componentes externos; este repositório entrega somente o backend.
-- O cliente Python precisa estar ativo para produzir previsões reais.
+- O serviço de previsão (HeatSafe Clima API) precisa estar ativo para produzir previsões reais.
 - Antes de produção, implementar gestão real de identidade, segredos, autenticação forte dos dispositivos, política de retenção, auditoria, TLS, observabilidade e revisão LGPD.
 
 ## ODS relacionados
@@ -219,12 +260,13 @@ Os testes existentes cobrem as fronteiras de classificação, entradas da calcul
 
 ## Validação técnica
 
-Este pacote foi preparado com base nas especificações fornecidas. O ambiente de criação desta entrega não possui `dotnet` instalado nem acesso à rede NuGet; por isso, `dotnet restore`, `dotnet build` e `dotnet test` ainda precisam ser executados no computador da equipe. Não considere o build validado até esses comandos terminarem com sucesso no ambiente local.
+Validado em 16/11/2026 no macOS com .NET SDK 10.0.103:
 
+- `dotnet build`: **0 avisos, 0 erros**.
+- `dotnet test`: **27 testes aprovados** (fronteiras de risco, calculadora, pontuação de prioridade e chave de dispositivo).
+- Teste de ponta a ponta com a API rodando: tokens dos 5 papéis, 401/403 de autorização, validações 400, leitura e eventos pelo token e pelo `X-Api-Key` do ESP32, alerta de perigo extremo escalonado para a UBS, confirmação pela família, atualização da visita pelo agente e consulta da previsão na HeatSafe Clima API (Java, porta 8080).
 
-## Nota de validação — versão 3.4
-
-A faixa operacional de temperatura aceita pelo backend é de -20 °C a 60 °C, alinhada entre DTO, serviço de integração e calculadora do índice de calor. Execute `TESTAR-HEATSAFE.bat` para restaurar, compilar e executar novamente a suíte.
+As saídas estão em [`docs/evidencias`](docs/evidencias).
 
 ## Corrigir modelo EF Core com migration pendente
 

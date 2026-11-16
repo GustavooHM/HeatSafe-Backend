@@ -196,15 +196,15 @@ Request:
 
 Valores do status: `PENDENTE`, `EM_ANDAMENTO`, `CONCLUIDA`, `CANCELADA`.
 
-## 4. Serviço Python/FastAPI → API C#
+## 4. Serviço de previsão (HeatSafe Clima API, Java) → API C#
 
-A comunicação é iniciada pelo backend C#; o serviço Python não precisa chamar a API C# para a consulta diária.
+A comunicação é iniciada pelo backend C#; o serviço de previsão não precisa chamar a API C# para a consulta diária.
 
 A API C# consulta:
 
 `GET {Forecast:BaseUrl}/previsao/amanha?estacao=A701`
 
-Resposta esperada do serviço Python:
+Resposta esperada do serviço de previsão:
 
 ```json
 {
@@ -219,7 +219,7 @@ Configuração no `appsettings.json`:
 ```json
 {
   "Forecast": {
-    "BaseUrl": "http://localhost:8000/",
+    "BaseUrl": "http://localhost:8080/",
     "Station": "A701",
     "TimeoutSeconds": 5
   }
@@ -235,10 +235,10 @@ A API registra a previsão válida e ativa o modo vigilância para o período pr
 | abaixo de 27 °C | `NORMAL` |
 | 27 °C até abaixo de 32 °C | `ATENCAO` |
 | 32 °C até abaixo de 41 °C | `CAUTELA_EXTREMA` |
-| 41 °C até 54 °C | `PERIGO` |
-| acima de 54 °C | `PERIGO_EXTREMO` |
+| 41 °C até abaixo de 54 °C | `PERIGO` |
+| 54 °C ou mais | `PERIGO_EXTREMO` |
 
-A API segue a tabela funcional HeatSafe, mantendo exatamente 54 °C em `PERIGO`.
+A API segue a tabela funcional HeatSafe: cada limite pertence ao nível de cima, então 54,0 °C já é `PERIGO_EXTREMO`.
 
 ## 6. Datas e fusos
 
@@ -278,7 +278,7 @@ Os endpoints DELETE realizam desativação lógica para preservar o histórico.
 ## 10. Limites do protótipo
 
 - A API não envia SMS, WhatsApp ou push real; usa adaptador de notificação demonstrativo via log.
-- A previsão efetiva depende da disponibilidade do serviço Python.
+- A previsão efetiva depende da disponibilidade do serviço de previsão.
 - O ESP32 e o aplicativo são implementações de outras disciplinas.
 - A pontuação de prioridade é uma heurística acadêmica, não substitui avaliação de profissionais de saúde.
 - A autenticação de usuário demonstrativa só é habilitada em Development. Antes de produção, é necessária uma solução real de identidade, rotação de segredos, autenticação forte do dispositivo, TLS e avaliação LGPD.

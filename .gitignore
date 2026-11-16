@@ -24,7 +24,8 @@
 .env
 .env.*
 appsettings.Local.json
-appsettings.Development.json
+# appsettings.Development.json é versionado de propósito: só tem as contas fictícias de demonstração,
+# usadas apenas no ambiente Development (sem ele, POST /auth/token não funciona após o clone).
 appsettings.*.local.json
 secrets.json
 **/secrets.json

@@ -23,7 +23,7 @@ Esta matriz relaciona os critérios de avaliação informados no briefing com os
 | Confirmar alerta | `AlertsController` | Confirmar com familiar vinculado; mostrar resposta 204 |
 | Escalonar para UBS | `RiskMonitoringService` + `RiskMonitoringBackgroundService` | Demonstrar alerta extremo imediato; para perigo, usar cenário de tempo controlado/teste específico |
 | Priorizar visitas | `PriorityScoringService` + `VisitsController` | Mostrar lista ordenada em `/visitas/prioritarias` |
-| Consultar previsão diária | `PrevisaoClimaticaClient` + `ForecastBackgroundService` | Subir serviço Python compatível e observar consulta/log |
+| Consultar previsão diária | `PrevisaoClimaticaClient` + `ForecastBackgroundService` | Subir a HeatSafe Clima API (SOA) e observar consulta/log |
 | Proteger dados por perfil | `[Authorize]` nos controllers e verificações de vínculo | Demonstrar familiar não autorizado recebendo 403 |
 
 ## 3. Testes automatizados presentes

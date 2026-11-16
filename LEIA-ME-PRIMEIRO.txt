@@ -23,6 +23,7 @@ CONTAS FICTICIAS DE DESENVOLVIMENTO
 - Administrador: admin / Admin@123
 - Familiar: familiar / Familia@123
 - Agente de saude: agente / Agente@123
+- Idoso: idoso / Idoso@123
 - Dispositivo: dispositivo / Device@123
 
 Essas contas e senhas existem apenas no ambiente Development para demonstracao local.
@@ -34,8 +35,9 @@ heatsafe.db e criado automaticamente na pasta de execucao da API.
 
 IMPORTANTE
 Este pacote contem o backend C# da equipe. O ESP32, o aplicativo Expo e o servico
-Python/FastAPI sao componentes de outras disciplinas. A API funciona localmente
-sem eles, mas a previsao real depende de o servico Python estar disponivel.
+O servico de previsao (HeatSafe Clima API, Java, porta 8080) e componente de outra
+disciplina. A API funciona localmente sem ele, mas a previsao real depende de ele
+estar disponivel.
 As notificacoes atuais sao demonstrativas e aparecem nos logs; nao enviam SMS,
 WhatsApp ou push reais.
 

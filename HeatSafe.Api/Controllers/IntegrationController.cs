@@ -1,14 +1,17 @@
 
 using System.Security.Claims;
 using HeatSafe.Api.DTOs;
+using HeatSafe.Api.Security;
 using HeatSafe.Api.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HeatSafe.Api.Controllers;
 
 [ApiController]
-[Authorize(Roles = "Dispositivo")]
+// Aceita o token JWT de dispositivo ou o cabeçalho X-Api-Key enviado pelo firmware do ESP32
+[Authorize(Roles = "Dispositivo", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + DeviceApiKeyAuthenticationHandler.SchemeName)]
 [Route("")]
 public sealed class IntegrationController(DeviceIntegrationService integration) : ControllerBase
 {

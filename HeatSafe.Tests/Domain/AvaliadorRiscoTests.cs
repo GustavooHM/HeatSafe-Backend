@@ -14,8 +14,8 @@ public sealed class AvaliadorRiscoTests
     [InlineData(32.00, NivelRisco.CAUTELA_EXTREMA)]
     [InlineData(40.99, NivelRisco.CAUTELA_EXTREMA)]
     [InlineData(41.00, NivelRisco.PERIGO)]
-    [InlineData(54.00, NivelRisco.PERIGO)]
-    [InlineData(54.01, NivelRisco.PERIGO_EXTREMO)]
+    [InlineData(53.99, NivelRisco.PERIGO)]
+    [InlineData(54.00, NivelRisco.PERIGO_EXTREMO)]
     public void Classificar_DeveRespeitarOsLimitesFuncionais(double heat, NivelRisco expected)
     {
         Assert.Equal(expected, _sut.Classificar(heat));

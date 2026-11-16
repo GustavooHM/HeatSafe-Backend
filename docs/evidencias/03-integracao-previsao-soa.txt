@@ -1,0 +1,28 @@
+# Integração com a HeatSafe Clima API (SOA, Java, porta 8080) — log da API C#
+Start processing HTTP request GET http://localhost:8080/previsao/amanha?*
+Sending HTTP request GET http://localhost:8080/previsao/amanha?*
+Previsão A701 registrada para 2026-01-01: perigoso=False, probabilidade=19 %
+[DEMO-NOTIFICACAO-FAMILIA] Alerta 1: Índice de calor classificado como perigo extremo.
+Alerta 1 criado para residência 1: PERIGO_EXTREMO
+[DEMO-NOTIFICACAO-UBS] Alerta 1: Índice de calor classificado como perigo extremo.
+Alerta 1 escalonado para a UBS
+[DEMO-NOTIFICACAO-FAMILIA] Alerta 2: Índice de calor classificado como perigo extremo.
+Alerta 2 criado para residência 1: PERIGO_EXTREMO
+[DEMO-NOTIFICACAO-UBS] Alerta 2: Índice de calor classificado como perigo extremo.
+Alerta 2 escalonado para a UBS
+
+# Mesma previsão registrada no lado do SOA (GET /estacoes/A701/previsoes)
+{
+  "id": 7,
+  "estacao": "A701",
+  "dataBase": "2025-12-31",
+  "dataPrevista": "2026-01-01",
+  "indiceCalorPrevisto": 29.9,
+  "probabilidadePerigo": 0.193,
+  "perigosa": false,
+  "nivelRisco": "ATENCAO",
+  "orientacao": "Está esquentando. Beba água com frequência.",
+  "metodo": "FREQUENCIA_HISTORICA",
+  "amostrasHistoricas": 280,
+  "criadaEm": "2026-11-16T15:58:54"
+}

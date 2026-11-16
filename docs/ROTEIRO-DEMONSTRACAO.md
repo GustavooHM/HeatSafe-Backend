@@ -51,7 +51,7 @@ Roteiro sugerido para mostrar o backend C# em uma demonstração acadêmica. Use
 Explicar como os demais componentes se conectam:
 
 - ESP32 envia leituras e eventos.
-- Python fornece previsão diária.
+- O serviço de clima (SOA, Java) fornece a previsão diária.
 - App Expo consome status, alertas e visitas.
 - Linux hospeda os serviços.
 - Segurança/QA fazem auditoria e validação.

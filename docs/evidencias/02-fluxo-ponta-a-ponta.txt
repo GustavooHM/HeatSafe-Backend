@@ -1,0 +1,32 @@
+# Teste de ponta a ponta da API (http://localhost:5078) — 16/11/2026 15:59
+
+## ESP32 com cabeçalho X-Api-Key (como o firmware envia)
+POST /leituras (chave certa): {"id":5,"indiceCalorCalculado":42.18,"indiceCalorInformado":42.2,"nivel":"PERIGO","divergencia":null} [201]
+POST /eventos LEMBRETE_AGUA: {"registrado":true,"mensagem":"Evento registrado."} [200]
+POST /leituras (chave errada): [401]
+
+## Fluxo completo com tokens JWT
+[200] token admin: ok, papel Administrador
+[200] token familiar: ok, papel Familiar
+[200] token agente: ok, papel AgenteSaude
+[200] token idoso: ok, papel Idoso
+[200] token dispositivo: ok, papel Dispositivo
+[401] token com senha errada: {"mensagem": "Credenciais demonstrativas inválidas."}
+[401] sem token -> /idosos: ""
+[403] familiar tentando /idosos (só admin): ""
+[200] admin GET /idosos: [{"id": 1, "nome": "Dona Maria (demonstração)", "idade": 78, "possuiVulnerabilidade": true, "residenciaId": 1}]
+[400] admin POST /idosos inválido (idade 30): {"type": "https://tools.ietf.org/html/rfc9110#section-15.5.1", "title": "One or more validation errors occurred.", "status": 400, "errors": {"Nome": ["The field Nome must be a string with a minimum length of 2 and a maximum length of 160."], "Idade": ["The field Idade must be between 60 and 120."]}, "traceId": "00-6858cf87a553f4
+[201] leitura 29 °C/55% (NORMAL/ATENCAO): {"id": 6, "indiceCalorCalculado": 30.31, "indiceCalorInformado": null, "nivel": "ATENCAO", "divergencia": null}
+[400] leitura umidade 150% (inválida): {"type": "https://tools.ietf.org/html/rfc9110#section-15.5.1", "title": "One or more validation errors occurred.", "status": 400, "errors": {"Umidade": ["The field Umidade must be between 0 and 100."]}, "traceId": "00-947381ce1226a87c3caa1629c4c25322-41510618caba2ea2-00"}
+[403] leitura de outro dispositivo (HS-999): ""
+[200] evento AGUA: {"registrado": true, "mensagem": "Evento registrado."}
+[400] evento tipo inválido: {"mensagem": "Tipo de evento inválido. Valores aceitos: AGUA, MOVIMENTO, ALARME_SEM_RESPOSTA, LEMBRETE_AGUA."}
+[201] leitura 40 °C/60% (PERIGO_EXTREMO): {"id": 7, "indiceCalorCalculado": 62.64, "indiceCalorInformado": null, "nivel": "PERIGO_EXTREMO", "divergencia": null}
+... aguardando o monitoramento em segundo plano (intervalo de 10 s)
+[200] familiar status residência 1: {"indiceCalor": 62.64, "nivel": "PERIGO_EXTREMO", "ultimoMovimento": "2026-11-16T18:59:57", "ultimaAgua": "2026-11-16T18:59:57", "alertaAtivo": true, "modoVigilancia": false, "vigilanciaAteUtc": null}
+[200] idoso status residência 1: {"indiceCalor": 62.64, "nivel": "PERIGO_EXTREMO", "ultimoMovimento": "2026-11-16T18:59:57", "ultimaAgua": "2026-11-16T18:59:57", "alertaAtivo": true, "modoVigilancia": false, "vigilanciaAteUtc": null}
+[200] familiar alertas ativos: [{"id": 2, "idoso": "Dona Maria (demonstração)", "indiceCalor": 62.64, "nivel": "PERIGO_EXTREMO", "tipo": "PERIGO_EXTREMO", "status": "ESCALONADO", "criadoEmUtc": "2026-11-16T18:59:57.402475", "motivo": "Índice de calor classificado como perigo extremo."}]
+[200] agente visitas prioritárias: [{"id": 1, "idoso": "Dona Maria (demonstração)", "endereco": "Residência demonstrativa 001 (endereço fictício)", "nivel": "PERIGO_EXTREMO", "pontuacao": 60, "motivo": "índice de calor elevado; vulnerabilidade cadastrada; alerta familiar ainda não confirmado.", "criadaEmUtc": "2026-11-16T18:58:54.294853", "status": "EM_ANDAMENTO"
+[204] familiar confirma alerta: null
+[403] familiar confirma alerta com outro familiarId (deve falhar): ""
+[204] agente atualiza visita para EM_ANDAMENTO: null

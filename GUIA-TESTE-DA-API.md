@@ -22,6 +22,7 @@ O seed local cria registros fictícios:
 | Administrador | `admin` | `Admin@123` | 99 | Consultar e gerenciar cadastros |
 | Familiar | `familiar` | `Familia@123` | 2 | Consultar status e confirmar alertas |
 | Agente de saúde | `agente` | `Agente@123` | 3 | Consultar e atualizar visitas |
+| Idoso | `idoso` | `Idoso@123` | 1 | Consultar o status da própria residência |
 | Dispositivo | `dispositivo` | `Device@123` | HS-001 | Enviar leituras e eventos |
 
 IDs fictícios seed:
@@ -93,7 +94,7 @@ Não faça isso em ambientes com dados reais ou que precisem ser preservados.
 ## 7. Limites importantes da demonstração
 
 - Notificações são registradas pelo adaptador demonstrativo; não são SMS, WhatsApp ou push reais.
-- A previsão climática depende do serviço externo Python/FastAPI. Se ele estiver indisponível, a API não inventa uma previsão.
+- A previsão climática depende do serviço externo de previsão (HeatSafe Clima API, Java, porta 8080). Se ele estiver indisponível, a API não inventa uma previsão.
 - Autenticação de demonstração existe somente em Development. Antes de produção, substitua-a por provedor de identidade, gestão segura de segredos e autenticação forte dos dispositivos.
 - A pontuação da UBS é uma heurística de priorização, não um diagnóstico médico.
 - A validação de build e testes deve ser executada no computador da equipe com o SDK .NET 10 e acesso ao NuGet.

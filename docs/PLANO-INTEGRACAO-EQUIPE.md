@@ -8,9 +8,9 @@ O HeatSafe é uma única solução dividida em entregas disciplinares. Este plan
 |---|---|---|
 | ESP32 / Physical Computing | Medir ambiente, movimento e botão de água; acionar alertas locais offline | Envia `POST /leituras` e `POST /eventos` |
 | API C# / Software Development | Persistir, recalcular calor, classificar risco, gerar alertas e visitas | Núcleo desta pasta |
-| Python/FastAPI + ML | Prever se o dia seguinte será perigoso com dados INMET | Backend consulta `GET /previsao/amanha?estacao=A701` |
+| SOA (Java/Spring Boot) + ML | Prever se o dia seguinte será perigoso com dados INMET | Backend consulta `GET /previsao/amanha?estacao=A701` |
 | Expo/React Native | Telas dos modos idoso, família e agente | Consome status, alertas, confirmação e visitas |
-| Linux / Operating Systems | Hospedar API e serviço Python, systemd, Nginx, monitoramento | Publica a API e configura URL de previsão |
+| Linux / Operating Systems | Hospedar a API e o serviço de previsão, systemd, Nginx, monitoramento | Publica a API e configura URL de previsão |
 | Cybersecurity | Auditar PII, taint analysis, segredo e vulnerabilidades | Avalia logs, DTOs, autenticação e fluxos de dados |
 | Testing / QA | Requisitos, casos positivos/negativos e evidências | Executa testes unitários, HTTP e valida permissões |
 
@@ -25,15 +25,15 @@ O HeatSafe é uma única solução dividida em entregas disciplinares. Este plan
 7. O familiar autorizado consulta e confirma o alerta pelo aplicativo.
 8. Se o critério de perigo permanecer sem confirmação no prazo, ou se houver perigo extremo, o caso gera uma visita para a fila da UBS.
 9. O agente consulta a lista ordenada por pontuação e atualiza o andamento da visita.
-10. Diariamente, o backend consulta a previsão Python para o dia seguinte e aplica o modo vigilância à data retornada.
+10. Diariamente, o backend consulta o serviço de previsão para o dia seguinte e aplica o modo vigilância à data retornada.
 
 ## 3. Regras que não devem ser duplicadas
 
 - A classificação oficial de risco da API deriva do índice recalculado pelo servidor; o nível enviado pelo ESP32 é apenas comparativo.
-- O serviço Python prevê o dia seguinte usando o conjunto INMET; a API C# não treina nem reproduz o modelo de ML.
+- O serviço de previsão prevê o dia seguinte usando o conjunto INMET; a API C# não treina nem reproduz o modelo de ML.
 - O aplicativo apresenta e envia ações; as regras de domínio permanecem no backend.
 - O alarme local do ESP32 deve funcionar sem depender da internet ou da API.
-- O backend não deve transformar ausência de resposta do serviço Python em previsão perigosa ou segura.
+- O backend não deve transformar ausência de resposta do serviço de previsão em previsão perigosa ou segura.
 
 ## 4. Ambientes e endereços
 
@@ -41,7 +41,7 @@ O HeatSafe é uma única solução dividida em entregas disciplinares. Este plan
 
 - API C#: `http://localhost:5078`
 - Swagger: `http://localhost:5078/swagger`
-- Serviço Python (valor padrão configurável): `http://localhost:8000`
+- Serviço de previsão (valor padrão configurável): `http://localhost:8080`
 
 Em dispositivos físicos ou máquinas diferentes, `localhost` aponta para o próprio dispositivo, não para o computador que hospeda a API. Nesses casos, usar o IP/hostname acessível da máquina que executa o backend e configurar CORS/TLS/autenticação de forma adequada antes de expor a rede.
 
@@ -57,7 +57,7 @@ Em dispositivos físicos ou máquinas diferentes, `localhost` aponta para o pró
 A integração real só estará completa quando os responsáveis entregarem e testarem:
 
 - Firmware ESP32 com os formatos JSON e autenticação acordados.
-- Serviço Python/FastAPI respondendo o contrato da previsão.
+- Serviço de previsão (HeatSafe Clima API) respondendo o contrato da previsão.
 - Aplicativo Expo apontando para a URL da API e usando os perfis/autorização adequados.
 - Ambiente Linux e domínio/URL definidos para a demonstração integrada.
 - Evidências da análise SentinelaSAST e casos de teste no Azure Boards.
